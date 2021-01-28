@@ -38,7 +38,7 @@ public class Selenium {
         searchField.sendKeys(Keys.ENTER);
     }
 
-    public static void compareResults() {
+    public static int compareResults() {
         WebElement countResults = browser.findElement(By.className("sb_count"));
         System.out.println(countResults.getText());
         String results = countResults.getText().replaceAll("[a-zA-z]", "").replaceAll("[ ,]", "");
@@ -51,6 +51,7 @@ public class Selenium {
         } else {
             System.out.println("Rasytojas nera labai populiarus");
         }
+        return results2;
     }
 
     public static void waitForTimeByXpath(String element) {
