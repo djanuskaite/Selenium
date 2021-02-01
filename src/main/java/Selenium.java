@@ -1,62 +1,86 @@
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class Selenium {
     private static WebDriver browser;
     public static final int WAIT_FOR_TIME = 2;
+    public static final String BING_SEARCH_BUTTON_XPATH = "//*[@id=\"sb_form_go\"]";
 
     public static void main(String args[]) {
         System.out.println("Selenium");
 
-        setUp();
-
-        searchByKeyword("Baranauskas");
-
-        compareResults();
-
+        setup();
+        searchKeyword("Baranauskas");
+        compareResultsNumber();
         close();
     }
 
-    public static void setUp() {
-        System.setProperty("webdriver.chrome.driver",
-                "src/drivers/chromedriver87.exe");
-
+    public static void setup() {
+        System.setProperty("webdriver.chrome.driver", "src/drivers/chromedriver87.exe");
         browser = new ChromeDriver();
-        browser.get("https://www.bing.com/");
+        browser.get("https://www.bing.com");
     }
 
-    public static void searchByKeyword(String keyword) {
-        waitForTimeByXpath("//*[@id=\"sb_form_q\"]");
+    public static void searchKeyword(String keyword) {
+        waitForVisibilityElementLocated("//*[@id=\"sb_form_q\"]");
         WebElement searchField = browser.findElement(By.xpath("//*[@id=\"sb_form_q\"]"));
         searchField.sendKeys(keyword);
-        searchField.sendKeys(Keys.ENTER);
+//        searchField.sendKeys(Keys.ENTER);
+
+        WebElement searchBtn = browser.findElement(By.xpath(BING_SEARCH_BUTTON_XPATH));
+
+        // pirmas veikiantis budas(javascriptExecuter)
+        JavascriptExecutor javascriptExecutor = (JavascriptExecutor) browser;
+        javascriptExecutor.executeScript("arguments[0].click();", searchBtn);
+
+//        // antras budas, neveikiantis google ir binge
+//        waitForVisibilityElementLocated(BING_SEARCH_BUTTON_XPATH);
+//        searchBtn.click();
+//
+//        // trecias budas, neveikiantis google ir binge
+//        waitForElementToBeClickable(BING_SEARCH_BUTTON_XPATH);
+//        searchBtn.click();
     }
 
-    public static int compareResults() {
-        WebElement countResults = browser.findElement(By.className("sb_count"));
-        System.out.println(countResults.getText());
-        String results = countResults.getText().replaceAll("[a-zA-z]", "").replaceAll("[ ,]", "");
+    public static String compareResultString() {
+        WebElement countResult = browser.findElement(By.className("sb_count"));
 
+        String resultStrWithoutNumbers = countResult.getText()
+                .replaceAll("[0-9]", "")
+                .replaceAll("[ ,]", "");    //searchKeyword("Baranauskas");
+        return resultStrWithoutNumbers;
+    }
 
-        int results2 = Integer.parseInt(results);
+    public static int compareResultsNumber() {
+        WebElement countResult = browser.findElement(By.className("sb_count"));
 
-        if (results2 > 50000) {
-            System.out.println("Rasytojas yra populiarus");
+        System.out.println(countResult.getText());
+        String resultStr = countResult.getText()
+                .replaceAll("[a-zA-z]", "")
+                .replaceAll("[ ,]", "");    //searchKeyword("Baranauskas");
+
+        int resultInt = Integer.parseInt(resultStr);
+        System.out.println(resultInt);
+
+        if (resultInt > 50000) {
+            System.out.println("Rasytojas yra pakankamai zinomnas");
         } else {
-            System.out.println("Rasytojas nera labai populiarus");
+            System.out.println("Nelabai zinomas");
         }
-        return results2;
+        return resultInt;
+
     }
 
-    public static void waitForTimeByXpath(String element) {
+    public static void waitForVisibilityElementLocated(String xpath) {
         WebDriverWait wait = new WebDriverWait(browser, WAIT_FOR_TIME);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(element)));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+    }
+
+    public static void waitForElementToBeClickable(String xpath) {
+        WebDriverWait wait = new WebDriverWait(browser, WAIT_FOR_TIME);
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath)));
     }
 
 
